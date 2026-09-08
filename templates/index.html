@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
 <meta charset="utf-8">
@@ -57,16 +56,13 @@ body{
 </style>
 
 </head>
-
 <body>
 
 <div class="container py-4">
 
 <div class="card-box">
 
-<h2 class="mb-3">
-NTRIP Checker
-</h2>
+<h2 class="mb-3">NTRIP Checker</h2>
 
 <input
 id="host"
@@ -77,8 +73,7 @@ placeholder="Caster">
 id="port"
 type="number"
 class="form-control mb-2"
-placeholder="Port"
-autocomplete="off">
+placeholder="Port">
 
 <input
 id="username"
@@ -94,31 +89,24 @@ placeholder="Password">
 <button
 class="btn btn-primary w-100 mb-3"
 onclick="getm()">
-
 Get Mountpoints
-
 </button>
 
 <select
 id="mp"
 class="form-select mb-3">
-
 </select>
 
 <button
 class="btn btn-success w-100 mb-2"
 onclick="testc()">
-
 Test Connection
-
 </button>
 
 <button
 class="btn btn-secondary w-100 mb-3"
 onclick="saveConnection()">
-
 Save Connection
-
 </button>
 
 <label class="form-label">
@@ -129,15 +117,12 @@ Saved Connections
 id="savedConnections"
 class="form-select mb-3"
 onchange="loadConnection()">
-
 </select>
 
 <button
 class="btn btn-danger w-100 mb-3"
 onclick="deleteConnection()">
-
 Delete Saved Connection
-
 </button>
 
 <div id="res"></div>
@@ -148,186 +133,162 @@ Delete Saved Connection
 
 <script>
 
-function payload(){
+function payload() {
 
-    return{
-
-        host:
-            document.getElementById("host").value,
-
-        port:
-            document.getElementById("port").value,
-
-        username:
-            document.getElementById("username").value,
-
-        password:
-            document.getElementById("password").value
-
+    return {
+        host: document.getElementById("host").value,
+        port: document.getElementById("port").value,
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value
     };
 
 }
 
-async function getm(){
+async function getm() {
 
-    let response = await fetch(
-        "/mountpoints",
-        {
-            method:"POST",
-            headers:{
-                "Content-Type":
-                "application/json"
+    try {
+
+        const response = await fetch("/mountpoints", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
             },
-            body:JSON.stringify(
-                payload()
-            )
-        }
-    );
+            body: JSON.stringify(payload())
+        });
 
-    let data =
-        await response.json();
+        const data = await response.json();
 
-    let select =
-        document.getElementById("mp");
+        const select =
+            document.getElementById("mp");
 
-    select.innerHTML = "";
+        select.innerHTML = "";
 
-    if(data.success){
+        if (data.success) {
 
-        data.mountpoints.forEach(
-            function(mp){
+            data.mountpoints.forEach(function(mp) {
 
-                let option =
-                    document.createElement(
-                        "option"
-                    );
+                const option =
+                    document.createElement("option");
 
-                option.text = mp;
                 option.value = mp;
+                option.text = mp;
 
-                select.add(option);
+                select.appendChild(option);
 
-            }
-        );
+            });
 
-    }
-    else{
+        } else {
 
-        alert(data.error);
+            alert(data.error);
+
+        }
+
+    } catch (err) {
+
+        alert(err);
 
     }
 
 }
 
-async function testc(){
+async function testc() {
 
-    let p = payload();
+    try {
 
-    p.mountpoint =
-        document.getElementById(
-            "mp"
-        ).value;
+        let p = payload();
 
-    let response =
-        await fetch(
-            "/test_connection",
-            {
-                method:"POST",
-                headers:{
+        p.mountpoint =
+            document.getElementById("mp").value;
+
+        const response =
+            await fetch("/test_connection", {
+
+                method: "POST",
+
+                headers: {
                     "Content-Type":
                     "application/json"
                 },
-                body:JSON.stringify(p)
+
+                body: JSON.stringify(p)
+
+            });
+
+        const data =
+            await response.json();
+
+        const result =
+            document.getElementById("res");
+
+        if (data.success) {
+
+            let cssClass =
+                "status-online";
+
+            let title =
+                "🟢 ONLINE";
+
+            if (data.status === "NO RTCM DATA") {
+
+                cssClass =
+                    "status-warning";
+
+                title =
+                    "🟡 NO RTCM DATA";
+
             }
-        );
 
-    let data =
-        await response.json();
+            result.innerHTML =
 
-    let result =
-        document.getElementById(
-            "res"
-        );
+                '<div class="status-box ' +
+                cssClass +
+                '">' +
 
-    if(data.success){
+                '<div class="status-title">' +
+                title +
+                '</div>' +
 
-        let cssClass =
-            "status-online";
+                '<div><strong>Latency:</strong> ' +
+                data.latency_ms +
+                ' ms</div>' +
 
-        let icon =
-            "🟢";
+                '<div><strong>Bytes:</strong> ' +
+                data.bytes_received +
+                '</div>' +
 
-        if(
-            data.status ===
-            "NO RTCM DATA"
-        ){
+                '<div><strong>RTCM:</strong> ' +
+                (data.rtcm_detected ? 'YES' : 'NO') +
+                '</div>' +
 
-            cssClass =
-            "status-warning";
+                '</div>';
 
-            icon =
-            "🟡";
+        } else {
+
+            result.innerHTML =
+
+                '<div class="status-box status-offline">' +
+
+                '<div class="status-title">' +
+                '🔴 OFFLINE' +
+                '</div>' +
+
+                '<div>' +
+                data.error +
+                '</div>' +
+
+                '</div>';
 
         }
 
-        result.innerHTML = `
+    } catch (err) {
 
-        <div class="status-box ${cssClass}">
-
-            <div class="status-title">
-
-                ${icon}
-                ${data.status}
-
-            </div>
-
-            <div>
-                <strong>Latency:</strong>
-                ${data.latency_ms} ms
-            </div>
-
-            <div>
-                <strong>Bytes:</strong>
-                ${data.bytes_received}
-            </div>
-
-            <div>
-                <strong>RTCM:</strong>
-                ${data.rtcm_detected ? "YES" : "NO"}
-            </div>
-
-        </div>
-
-        `;
-
-    }
-    else{
-
-        result.innerHTML = `
-
-        <div class="status-box status-offline">
-
-            <div class="status-title">
-
-                🔴 OFFLINE
-
-            </div>
-
-            <div>
-
-                ${data.error}
-
-            </div>
-
-        </div>
-
-        `;
+        alert(err);
 
     }
 
 }
 
-function saveConnection(){
+function saveConnection() {
 
     let profiles =
         JSON.parse(
@@ -339,24 +300,24 @@ function saveConnection(){
     profiles.push({
 
         host:
-        document.getElementById(
-            "host"
-        ).value,
+            document.getElementById(
+                "host"
+            ).value,
 
         port:
-        document.getElementById(
-            "port"
-        ).value,
+            document.getElementById(
+                "port"
+            ).value,
 
         username:
-        document.getElementById(
-            "username"
-        ).value,
+            document.getElementById(
+                "username"
+            ).value,
 
         password:
-        document.getElementById(
-            "password"
-        ).value
+            document.getElementById(
+                "password"
+            ).value
 
     });
 
@@ -369,7 +330,7 @@ function saveConnection(){
 
 }
 
-function populateProfiles(){
+function populateProfiles() {
 
     let profiles =
         JSON.parse(
@@ -378,28 +339,28 @@ function populateProfiles(){
             ) || "[]"
         );
 
-    let dropdown =
+    const dropdown =
         document.getElementById(
             "savedConnections"
         );
 
     dropdown.innerHTML =
-    '<option value="">Select saved connection</option>';
+        '<option value="">Select saved connection</option>';
 
-    profiles.forEach(
-        function(profile,index){
+    profiles.forEach(function(p, i) {
 
-            dropdown.innerHTML +=
-            `<option value="${index}">
-                ${profile.host}
-            </option>`;
+        dropdown.innerHTML +=
+            '<option value="' +
+            i +
+            '">' +
+            p.host +
+            '</option>';
 
-        }
-    );
+    });
 
 }
 
-function loadConnection(){
+function loadConnection() {
 
     let profiles =
         JSON.parse(
@@ -413,28 +374,22 @@ function loadConnection(){
             "savedConnections"
         ).value;
 
-    if(idx === "")
+    if (idx === "")
         return;
 
-    let profile =
+    const profile =
         profiles[idx];
 
-    if(!profile)
+    if (!profile)
         return;
 
-    document.getElementById(
-        "host"
-    ).value =
+    document.getElementById("host").value =
         profile.host;
 
-    document.getElementById(
-        "port"
-    ).value =
+    document.getElementById("port").value =
         profile.port;
 
-    document.getElementById(
-        "username"
-    ).value =
+    document.getElementById("username").value =
         profile.username;
 
     document.
