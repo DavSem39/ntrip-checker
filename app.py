@@ -45,12 +45,10 @@ def mountpoints():
         s.sendall(
 
             auth(
-
                 host,
                 port,
                 d["username"],
                 d["password"]
-
             ).encode()
 
         )
@@ -66,11 +64,31 @@ def mountpoints():
 
             data += chunk
 
+        text = data.decode(
+            errors="ignore"
+        )
+
+        #
+        # Detectar autenticação inválida
+        #
+
+        if (
+            "401" in text
+            or "Unauthorized" in text
+            or "WWW-Authenticate" in text
+        ):
+
+            return jsonify(
+
+                success=False,
+
+                error="Wrong username or password."
+
+            )
+
         mountpoints = []
 
-        for line in data.decode(
-            errors="ignore"
-        ).splitlines():
+        for line in text.splitlines():
 
             if line.startswith("STR;"):
 
@@ -82,6 +100,16 @@ def mountpoints():
 
                 except:
                     pass
+
+        if len(mountpoints) == 0:
+
+            return jsonify(
+
+                success=False,
+
+                error="No mountpoints found."
+
+            )
 
         return jsonify(
 
@@ -155,7 +183,6 @@ def test_connection():
 
     s = socket.socket()
 
-    # Faster timeout
     s.settimeout(3)
 
     try:
@@ -171,23 +198,17 @@ def test_connection():
         s.connect((host, port))
 
         latency_ms = round(
-
-            (time.time() - start_time)
-
-            * 1000
-
+            (time.time() - start_time) * 1000
         )
 
         s.sendall(
 
             auth(
-
                 host,
                 port,
                 username,
                 password,
                 f"/{mountpoint}"
-
             ).encode()
 
         )
@@ -209,9 +230,6 @@ def test_connection():
 
                 bytes_received += len(packet)
 
-                #
-                # RTCM 3.x preamble
-                #
                 if b"\xD3" in packet:
 
                     rtcm_detected = True
@@ -313,11 +331,7 @@ def test_connection():
 if __name__ == "__main__":
 
     app.run(
-
         host="0.0.0.0",
-
         port=5000,
-
         debug=False
-
     )
