@@ -4,9 +4,9 @@
 <head>
 
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<title>NTRIP Checker(It takes about 5s to test the connection BE PATIENT)</title>
+<title>NTRIP Checker</title>
 
 <link rel="stylesheet"
 href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
@@ -14,14 +14,71 @@ href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 <style>
 
 body{
-    background:#f5f7fa;
+    background:#eef3f8;
+    margin:0;
+    min-height:100vh;
+    font-family:Segoe UI, Arial, sans-serif;
+}
+
+.container-main{
+    max-width:550px;
+    margin:auto;
+    padding:15px;
 }
 
 .card-box{
     background:white;
     padding:20px;
-    border-radius:15px;
-    box-shadow:0 2px 10px rgba(0,0,0,.08);
+    border-radius:25px;
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+}
+
+.app-header{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.back-btn{
+    width:45px;
+    height:45px;
+    border:none;
+    border-radius:50%;
+    background:#003b64;
+    color:white;
+    font-size:22px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+}
+
+.back-btn:hover{
+    background:#00538c;
+}
+
+.app-title h2{
+    margin:0;
+    font-size:24px;
+    font-weight:700;
+}
+
+.app-title small{
+    color:#666;
+}
+
+.form-control,
+.form-select{
+    min-height:55px;
+    border-radius:12px;
+    margin-bottom:10px;
+}
+
+.btn{
+    min-height:55px;
+    border-radius:12px;
+    font-weight:600;
 }
 
 .status-online{
@@ -44,7 +101,7 @@ body{
 
 .status-box{
     padding:15px;
-    border-radius:10px;
+    border-radius:12px;
     margin-top:15px;
 }
 
@@ -54,94 +111,134 @@ body{
     margin-bottom:10px;
 }
 
+.info-text{
+    font-size:12px;
+    color:#777;
+    margin-bottom:15px;
+}
+
+@media(max-width:768px){
+
+    .card-box{
+        padding:16px;
+    }
+
+    .app-title h2{
+        font-size:22px;
+    }
+
+}
+
 </style>
 
 </head>
 
 <body>
 
-<div class="container py-4">
+<div class="container-main">
 
-    <div class="card-box">
+<div class="card-box">
 
-        <h2 class="mb-3">
-            NTRIP Checker
-        </h2>
+<div class="app-header">
 
-        <input
-            id="host"
-            class="form-control mb-2"
-            placeholder="Caster">
+    <button
+        class="back-btn"
+        onclick="history.back()">
 
-        <input
-            id="port"
-            type="number"
-            class="form-control mb-2"
-            placeholder="Port">
+        ←
 
-        <input
-            id="username"
-            class="form-control mb-2"
-            placeholder="Username">
+    </button>
 
-        <input
-            id="password"
-            type="password"
-            class="form-control mb-3"
-            placeholder="Password">
+    <div class="app-title">
 
-        <button
-            class="btn btn-primary w-100 mb-3"
-            onclick="getm()">
+        <h2>NTRIP Checker</h2>
 
-            Get Mountpoints
-
-        </button>
-
-        <select
-            id="mp"
-            class="form-select mb-3">
-
-        </select>
-
-        <button
-            class="btn btn-success w-100 mb-2"
-            onclick="testc()">
-
-            Test Connection
-
-        </button>
-
-        <button
-            class="btn btn-secondary w-100 mb-3"
-            onclick="saveConnection()">
-
-            Save Connection
-
-        </button>
-
-        <label class="form-label">
-            Saved Connections
-        </label>
-
-        <select
-            id="savedConnections"
-            class="form-select mb-3"
-            onchange="loadConnection()">
-
-        </select>
-
-        <button
-            class="btn btn-danger w-100 mb-3"
-            onclick="deleteConnection()">
-
-            Delete Saved Connection
-
-        </button>
-
-        <div id="res"></div>
+        <small>
+            Dravo Survey Tools
+        </small>
 
     </div>
+
+</div>
+
+<div class="info-text">
+It takes approximately 5 seconds to validate the RTCM stream.
+</div>
+
+<input
+id="host"
+class="form-control"
+placeholder="Caster">
+
+<input
+id="port"
+type="number"
+class="form-control"
+placeholder="Port">
+
+<input
+id="username"
+class="form-control"
+placeholder="Username">
+
+<input
+id="password"
+type="password"
+class="form-control"
+placeholder="Password">
+
+<button
+class="btn btn-primary w-100 mb-3"
+onclick="getm()">
+
+Load Mountpoints
+
+</button>
+
+<select
+id="mp"
+class="form-select">
+
+</select>
+
+<button
+class="btn btn-success w-100 mb-2"
+onclick="testc()">
+
+Check Connection
+
+</button>
+
+<button
+class="btn btn-secondary w-100 mb-3"
+onclick="saveConnection()">
+
+Save Connection
+
+</button>
+
+<label class="form-label">
+Saved Connections
+</label>
+
+<select
+id="savedConnections"
+class="form-select mb-3"
+onchange="loadConnection()">
+
+</select>
+
+<button
+class="btn btn-danger w-100 mb-3"
+onclick="deleteConnection()">
+
+Delete Saved Connection
+
+</button>
+
+<div id="res"></div>
+
+</div>
 
 </div>
 
@@ -152,16 +249,16 @@ function payload(){
     return {
 
         host:
-            document.getElementById("host").value,
+        document.getElementById("host").value,
 
         port:
-            document.getElementById("port").value,
+        document.getElementById("port").value,
 
         username:
-            document.getElementById("username").value,
+        document.getElementById("username").value,
 
         password:
-            document.getElementById("password").value
+        document.getElementById("password").value
 
     };
 
@@ -184,7 +281,7 @@ async function getm(){
     let data = await response.json();
 
     let select =
-        document.getElementById("mp");
+    document.getElementById("mp");
 
     select.innerHTML = "";
 
@@ -193,7 +290,7 @@ async function getm(){
         data.mountpoints.forEach(function(mp){
 
             let option =
-                document.createElement("option");
+            document.createElement("option");
 
             option.value = mp;
             option.text = mp;
@@ -215,42 +312,42 @@ async function testc(){
     let p = payload();
 
     p.mountpoint =
-        document.getElementById("mp").value;
+    document.getElementById("mp").value;
 
     let response =
-        await fetch('/test_connection',{
+    await fetch('/test_connection',{
 
-            method:'POST',
+        method:'POST',
 
-            headers:{
-                'Content-Type':'application/json'
-            },
+        headers:{
+            'Content-Type':'application/json'
+        },
 
-            body:JSON.stringify(p)
+        body:JSON.stringify(p)
 
-        });
+    });
 
     let data =
-        await response.json();
+    await response.json();
 
     let result =
-        document.getElementById("res");
+    document.getElementById("res");
 
     if(data.success){
 
         let cssClass =
-            "status-online";
+        "status-online";
 
         let title =
-            "🟢 ONLINE";
+        "🟢 ONLINE";
 
         if(data.status === "NO RTCM DATA"){
 
             cssClass =
-                "status-warning";
+            "status-warning";
 
             title =
-                "🟡 NO RTCM DATA";
+            "🟡 NO RTCM DATA";
 
         }
 
@@ -318,34 +415,31 @@ async function testc(){
 function saveConnection(){
 
     let profiles =
-        JSON.parse(
-            localStorage.getItem(
-                "ntripProfiles"
-            ) || "[]"
-        );
+    JSON.parse(
+        localStorage.getItem(
+            "ntripProfiles"
+        ) || "[]"
+    );
 
     profiles.push({
 
         host:
-            document.getElementById("host").value,
+        document.getElementById("host").value,
 
         port:
-            document.getElementById("port").value,
+        document.getElementById("port").value,
 
         username:
-            document.getElementById("username").value,
+        document.getElementById("username").value,
 
         password:
-            document.getElementById("password").value
+        document.getElementById("password").value
 
     });
 
     localStorage.setItem(
-
         "ntripProfiles",
-
         JSON.stringify(profiles)
-
     );
 
     populateProfiles();
@@ -357,19 +451,19 @@ function saveConnection(){
 function populateProfiles(){
 
     let profiles =
-        JSON.parse(
-            localStorage.getItem(
-                "ntripProfiles"
-            ) || "[]"
-        );
+    JSON.parse(
+        localStorage.getItem(
+            "ntripProfiles"
+        ) || "[]"
+    );
 
     let dropdown =
-        document.getElementById(
-            "savedConnections"
-        );
+    document.getElementById(
+        "savedConnections"
+    );
 
     dropdown.innerHTML =
-        '<option value="">Select saved connection</option>';
+    '<option value="">Select saved connection</option>';
 
     profiles.forEach(function(profile,index){
 
@@ -386,55 +480,55 @@ function populateProfiles(){
 function loadConnection(){
 
     let profiles =
-        JSON.parse(
-            localStorage.getItem(
-                "ntripProfiles"
-            ) || "[]"
-        );
+    JSON.parse(
+        localStorage.getItem(
+            "ntripProfiles"
+        ) || "[]"
+    );
 
     let index =
-        document.getElementById(
-            "savedConnections"
-        ).value;
+    document.getElementById(
+        "savedConnections"
+    ).value;
 
     if(index === "")
         return;
 
     let profile =
-        profiles[index];
+    profiles[index];
 
     if(!profile)
         return;
 
     document.getElementById("host").value =
-        profile.host;
+    profile.host;
 
     document.getElementById("port").value =
-        profile.port;
+    profile.port;
 
     document.getElementById("username").value =
-        profile.username;
+    profile.username;
 
     document.getElementById("password").value =
-        profile.password;
+    profile.password;
 
 }
 
 function deleteConnection(){
 
     let profiles =
-        JSON.parse(
-            localStorage.getItem(
-                "ntripProfiles"
-            ) || "[]"
-        );
+    JSON.parse(
+        localStorage.getItem(
+            "ntripProfiles"
+        ) || "[]"
+    );
 
     let index =
-        parseInt(
-            document.getElementById(
-                "savedConnections"
-            ).value
-        );
+    parseInt(
+        document.getElementById(
+            "savedConnections"
+        ).value
+    );
 
     if(isNaN(index))
         return;
@@ -442,11 +536,8 @@ function deleteConnection(){
     profiles.splice(index,1);
 
     localStorage.setItem(
-
         "ntripProfiles",
-
         JSON.stringify(profiles)
-
     );
 
     populateProfiles();
@@ -457,11 +548,4 @@ function deleteConnection(){
 
 window.onload = function(){
 
-    populateProfiles();
-
-};
-
-</script>
-
-</body>
-</html>
+   
