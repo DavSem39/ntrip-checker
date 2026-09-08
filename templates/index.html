@@ -1,6 +1,5 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html>
-
 <head>
 
 <meta charset="utf-8">
@@ -48,14 +47,7 @@ body{
     background:#003b64;
     color:white;
     font-size:22px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
     cursor:pointer;
-}
-
-.back-btn:hover{
-    background:#00538c;
 }
 
 .app-title h2{
@@ -113,20 +105,8 @@ body{
 
 .info-text{
     font-size:12px;
-    color:#777;
+    color:#666;
     margin-bottom:15px;
-}
-
-@media(max-width:768px){
-
-    .card-box{
-        padding:16px;
-    }
-
-    .app-title h2{
-        font-size:22px;
-    }
-
 }
 
 </style>
@@ -141,28 +121,28 @@ body{
 
 <div class="app-header">
 
-    <button
-        class="back-btn"
-        onclick="history.back()">
+<button
+class="back-btn"
+onclick="history.back()">
 
-        ←
+←
 
-    </button>
+</button>
 
-    <div class="app-title">
+<div class="app-title">
 
-        <h2>NTRIP Checker</h2>
+<h2>NTRIP Checker</h2>
 
-        <small>
-            Dravo Survey Tools
-        </small>
+<small>Dravo Survey Tools</small>
 
-    </div>
+</div>
 
 </div>
 
 <div class="info-text">
+
 It takes approximately 5 seconds to validate the RTCM stream.
+
 </div>
 
 <input
@@ -197,7 +177,11 @@ Load Mountpoints
 
 <select
 id="mp"
-class="form-select">
+class="form-select mb-3">
+
+<option value="">
+Select Mountpoint
+</option>
 
 </select>
 
@@ -225,7 +209,6 @@ Saved Connections
 id="savedConnections"
 class="form-select mb-3"
 onchange="loadConnection()">
-
 </select>
 
 <button
@@ -248,17 +231,10 @@ function payload(){
 
     return {
 
-        host:
-        document.getElementById("host").value,
-
-        port:
-        document.getElementById("port").value,
-
-        username:
-        document.getElementById("username").value,
-
-        password:
-        document.getElementById("password").value
+        host: document.getElementById("host").value,
+        port: document.getElementById("port").value,
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value
 
     };
 
@@ -266,42 +242,57 @@ function payload(){
 
 async function getm(){
 
-    let response = await fetch('/mountpoints',{
+    try{
 
-        method:'POST',
+        let response = await fetch("/mountpoints",{
 
-        headers:{
-            'Content-Type':'application/json'
-        },
+            method:"POST",
 
-        body:JSON.stringify(payload())
+            headers:{
+                "Content-Type":"application/json"
+            },
 
-    });
-
-    let data = await response.json();
-
-    let select =
-    document.getElementById("mp");
-
-    select.innerHTML = "";
-
-    if(data.success){
-
-        data.mountpoints.forEach(function(mp){
-
-            let option =
-            document.createElement("option");
-
-            option.value = mp;
-            option.text = mp;
-
-            select.appendChild(option);
+            body:JSON.stringify(payload())
 
         });
 
-    }else{
+        let data = await response.json();
 
-        alert(data.error);
+        let select =
+        document.getElementById("mp");
+
+        select.innerHTML = "";
+
+        if(data.success){
+
+            data.mountpoints.forEach(function(mp){
+
+                let option =
+                document.createElement("option");
+
+                option.value = mp;
+                option.textContent = mp;
+
+                select.appendChild(option);
+
+            });
+
+            if(data.mountpoints.length === 0){
+
+                select.innerHTML =
+                '<option>No mountpoints found</option>';
+
+            }
+
+        }else{
+
+            alert(data.error);
+
+        }
+
+    }catch(err){
+
+        alert("Error loading mountpoints:\n\n" + err);
 
     }
 
@@ -309,104 +300,100 @@ async function getm(){
 
 async function testc(){
 
-    let p = payload();
+    try{
 
-    p.mountpoint =
-    document.getElementById("mp").value;
+        let p = payload();
 
-    let response =
-    await fetch('/test_connection',{
+        p.mountpoint =
+        document.getElementById("mp").value;
 
-        method:'POST',
+        let response =
+        await fetch("/test_connection",{
 
-        headers:{
-            'Content-Type':'application/json'
-        },
+            method:"POST",
 
-        body:JSON.stringify(p)
+            headers:{
+                "Content-Type":"application/json"
+            },
 
-    });
+            body:JSON.stringify(p)
 
-    let data =
-    await response.json();
+        });
 
-    let result =
-    document.getElementById("res");
+        let data =
+        await response.json();
 
-    if(data.success){
+        let result =
+        document.getElementById("res");
 
-        let cssClass =
-        "status-online";
+        if(data.success){
 
-        let title =
-        "🟢 ONLINE";
+            let cssClass =
+            "status-online";
 
-        if(data.status === "NO RTCM DATA"){
+            let title =
+            "🟢 ONLINE";
 
-            cssClass =
-            "status-warning";
+            if(data.status === "NO RTCM DATA"){
 
-            title =
-            "🟡 NO RTCM DATA";
+                cssClass =
+                "status-warning";
+
+                title =
+                "🟡 NO RTCM DATA";
+
+            }
+
+            result.innerHTML = `
+
+            <div class="status-box ${cssClass}">
+
+                <div class="status-title">
+                    ${title}
+                </div>
+
+                <div>
+                    <strong>Latency:</strong>
+                    ${data.latency_ms} ms
+                </div>
+
+                <div>
+                    <strong>Bytes:</strong>
+                    ${data.bytes_received}
+                </div>
+
+                <div>
+                    <strong>RTCM:</strong>
+                    ${data.rtcm_detected ? "YES" : "NO"}
+                </div>
+
+            </div>
+
+            `;
+
+        }else{
+
+            result.innerHTML = `
+
+            <div class="status-box status-offline">
+
+                <div class="status-title">
+                    🔴 OFFLINE
+                </div>
+
+                <div>
+                    ${data.error}
+                </div>
+
+            </div>
+
+            `;
 
         }
 
-        result.innerHTML = `
+    }catch(err){
 
-        <div class="status-box ${cssClass}">
-
-            <div class="status-title">
-
-                ${title}
-
-            </div>
-
-            <div>
-
-                <strong>Latency:</strong>
-                ${data.latency_ms} ms
-
-            </div>
-
-            <div>
-
-                <strong>Bytes Received:</strong>
-                ${data.bytes_received}
-
-            </div>
-
-            <div>
-
-                <strong>RTCM:</strong>
-                ${data.rtcm_detected ? "YES" : "NO"}
-
-            </div>
-
-        </div>
-
-        `;
-
-    }else{
-
-        result.innerHTML = `
-
-        <div class="status-box status-offline">
-
-            <div class="status-title">
-
-                🔴 OFFLINE
-
-            </div>
-
-            <div>
-
-                ${data.error}
-
-            </div>
-
-        </div>
-
-        `;
+        alert(err);
 
     }
 
@@ -416,24 +403,16 @@ function saveConnection(){
 
     let profiles =
     JSON.parse(
-        localStorage.getItem(
-            "ntripProfiles"
-        ) || "[]"
+        localStorage.getItem("ntripProfiles")
+        || "[]"
     );
 
     profiles.push({
 
-        host:
-        document.getElementById("host").value,
-
-        port:
-        document.getElementById("port").value,
-
-        username:
-        document.getElementById("username").value,
-
-        password:
-        document.getElementById("password").value
+        host: document.getElementById("host").value,
+        port: document.getElementById("port").value,
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value
 
     });
 
@@ -452,15 +431,12 @@ function populateProfiles(){
 
     let profiles =
     JSON.parse(
-        localStorage.getItem(
-            "ntripProfiles"
-        ) || "[]"
+        localStorage.getItem("ntripProfiles")
+        || "[]"
     );
 
     let dropdown =
-    document.getElementById(
-        "savedConnections"
-    );
+    document.getElementById("savedConnections");
 
     dropdown.innerHTML =
     '<option value="">Select saved connection</option>';
@@ -481,9 +457,8 @@ function loadConnection(){
 
     let profiles =
     JSON.parse(
-        localStorage.getItem(
-            "ntripProfiles"
-        ) || "[]"
+        localStorage.getItem("ntripProfiles")
+        || "[]"
     );
 
     let index =
@@ -518,9 +493,8 @@ function deleteConnection(){
 
     let profiles =
     JSON.parse(
-        localStorage.getItem(
-            "ntripProfiles"
-        ) || "[]"
+        localStorage.getItem("ntripProfiles")
+        || "[]"
     );
 
     let index =
@@ -548,4 +522,11 @@ function deleteConnection(){
 
 window.onload = function(){
 
-   
+    populateProfiles();
+
+};
+
+</script>
+
+</body>
+</html>
