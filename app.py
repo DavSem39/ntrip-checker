@@ -38,19 +38,17 @@ def mps():
 
     try:
 
-        s.connect(
-            (
-                d["host"],
-                int(d["port"])
-            )
-        )
+        host = d["host"]
+        port = int(d["port"])
+
+        s.connect((host, port))
 
         s.sendall(
 
             auth(
 
-                d["host"],
-                d["port"],
+                host,
+                port,
                 d["username"],
                 d["password"]
 
@@ -62,12 +60,12 @@ def mps():
 
         while True:
 
-            x = s.recv(4096)
+            chunk = s.recv(4096)
 
-            if not x:
+            if not chunk:
                 break
 
-            txt += x
+            txt += chunk
 
         mountpoints = []
 
@@ -80,13 +78,10 @@ def mps():
                 try:
 
                     mountpoints.append(
-
                         line.split(";")[1]
-
                     )
 
                 except:
-
                     pass
 
         return jsonify(
@@ -94,6 +89,45 @@ def mps():
             success=True,
 
             mountpoints=mountpoints
+
+        )
+
+    except socket.timeout:
+
+        return jsonify(
+
+            success=False,
+
+            error=(
+                "Connection timed out. "
+                "Check hostname, port or firewall."
+            )
+
+        )
+
+    except ConnectionRefusedError:
+
+        return jsonify(
+
+            success=False,
+
+            error=(
+                "Connection refused. "
+                "No NTRIP service is listening on this port."
+            )
+
+        )
+
+    except socket.gaierror:
+
+        return jsonify(
+
+            success=False,
+
+            error=(
+                "Invalid hostname "
+                "or DNS lookup failed."
+            )
 
         )
 
@@ -123,20 +157,19 @@ def test_connection():
 
     try:
 
-        start = time.time()
+        host = d["host"]
+        port = int(d["port"])
+        username = d["username"]
+        password = d["password"]
+        mountpoint = d["mountpoint"]
 
-        s.connect(
+        start_time = time.time()
 
-            (
-                d["host"],
-                int(d["port"])
-            )
+        s.connect((host, port))
 
-        )
+        latency_ms = round(
 
-        latency = round(
-
-            (time.time() - start)
+            (time.time() - start_time)
 
             * 1000
 
@@ -146,23 +179,23 @@ def test_connection():
 
             auth(
 
-                d["host"],
-                d["port"],
-                d["username"],
-                d["password"],
-                f"/{d['mountpoint']}"
+                host,
+                port,
+                username,
+                password,
+                f"/{mountpoint}"
 
             ).encode()
 
         )
 
-        end = time.time() + 5
+        finish_time = time.time() + 5
 
         bytes_received = 0
 
         rtcm_detected = False
 
-        while time.time() < end:
+        while time.time() < finish_time:
 
             try:
 
@@ -173,7 +206,10 @@ def test_connection():
 
                 bytes_received += len(packet)
 
-                # RTCM v3 preamble
+                #
+                # RTCM 3.x packets start
+                # with preamble 0xD3
+                #
                 if b"\xD3" in packet:
 
                     rtcm_detected = True
@@ -196,11 +232,55 @@ def test_connection():
 
             status=status,
 
-            latency_ms=latency,
+            latency_ms=latency_ms,
 
             bytes_received=bytes_received,
 
             rtcm_detected=rtcm_detected
+
+        )
+
+    except socket.timeout:
+
+        return jsonify(
+
+            success=False,
+
+            status="OFFLINE",
+
+            error=(
+                f"Port {d['port']} did not respond. "
+                "Possible wrong port, firewall or caster offline."
+            )
+
+        )
+
+    except ConnectionRefusedError:
+
+        return jsonify(
+
+            success=False,
+
+            status="OFFLINE",
+
+            error=(
+                f"Port {d['port']} is closed. "
+                "No service is accepting connections."
+            )
+
+        )
+
+    except socket.gaierror:
+
+        return jsonify(
+
+            success=False,
+
+            status="OFFLINE",
+
+            error=(
+                "Invalid hostname or DNS lookup failed."
+            )
 
         )
 
@@ -212,7 +292,7 @@ def test_connection():
 
             status="OFFLINE",
 
-            error=str(e)
+            error=f"Unexpected error: {str(e)}"
 
         )
 
@@ -224,7 +304,11 @@ def test_connection():
 if __name__ == "__main__":
 
     app.run(
+
         host="0.0.0.0",
+
         port=5000,
+
         debug=False
+
     )
