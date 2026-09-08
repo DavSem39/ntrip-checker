@@ -30,58 +30,64 @@ def home():
 @app.post("/mountpoints")
 def mps():
 
-    data = request.json
+    d = request.json
 
-    sock = socket.socket()
+    s = socket.socket()
 
-    sock.settimeout(10)
+    s.settimeout(10)
 
     try:
 
-        sock.connect(
+        s.connect(
             (
-                data["host"],
-                int(data["port"])
+                d["host"],
+                int(d["port"])
             )
         )
 
-        sock.sendall(
+        s.sendall(
 
             auth(
 
-                data["host"],
-                data["port"],
-                data["username"],
-                data["password"]
+                d["host"],
+                d["port"],
+                d["username"],
+                d["password"]
 
             ).encode()
 
         )
 
-        text = b""
+        txt = b""
 
         while True:
 
-            chunk = sock.recv(4096)
+            x = s.recv(4096)
 
-            if not chunk:
+            if not x:
                 break
 
-            text += chunk
+            txt += x
 
         mountpoints = []
 
-        for line in text.decode(
+        for line in txt.decode(
             errors="ignore"
         ).splitlines():
 
             if line.startswith("STR;"):
 
-                mountpoints.append(
+                try:
 
-                    line.split(";")[1]
+                    mountpoints.append(
 
-                )
+                        line.split(";")[1]
+
+                    )
+
+                except:
+
+                    pass
 
         return jsonify(
 
@@ -103,27 +109,27 @@ def mps():
 
     finally:
 
-        sock.close()
+        s.close()
 
 
 @app.post("/test_connection")
 def test_connection():
 
-    data = request.json
+    d = request.json
 
-    sock = socket.socket()
+    s = socket.socket()
 
-    sock.settimeout(5)
+    s.settimeout(5)
 
     try:
 
         start = time.time()
 
-        sock.connect(
+        s.connect(
 
             (
-                data["host"],
-                int(data["port"])
+                d["host"],
+                int(d["port"])
             )
 
         )
@@ -136,37 +142,38 @@ def test_connection():
 
         )
 
-        sock.sendall(
+        s.sendall(
 
             auth(
 
-                data["host"],
-                data["port"],
-                data["username"],
-                data["password"],
-                f"/{data['mountpoint']}"
+                d["host"],
+                d["port"],
+                d["username"],
+                d["password"],
+                f"/{d['mountpoint']}"
 
             ).encode()
 
         )
 
-        end_time = time.time() + 5
+        end = time.time() + 5
 
         bytes_received = 0
 
         rtcm_detected = False
 
-        while time.time() < end_time:
+        while time.time() < end:
 
             try:
 
-                packet = sock.recv(4096)
+                packet = s.recv(4096)
 
                 if not packet:
                     break
 
                 bytes_received += len(packet)
 
+                # RTCM v3 preamble
                 if b"\xD3" in packet:
 
                     rtcm_detected = True
@@ -211,12 +218,13 @@ def test_connection():
 
     finally:
 
-        sock.close()
+        s.close()
 
 
 if __name__ == "__main__":
 
     app.run(
         host="0.0.0.0",
-        port=5000
+        port=5000,
+        debug=False
     )
