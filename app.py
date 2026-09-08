@@ -28,12 +28,11 @@ def home():
 
 
 @app.post("/mountpoints")
-def mps():
+def mountpoints():
 
     d = request.json
 
     s = socket.socket()
-
     s.settimeout(10)
 
     try:
@@ -56,7 +55,7 @@ def mps():
 
         )
 
-        txt = b""
+        data = b""
 
         while True:
 
@@ -65,11 +64,11 @@ def mps():
             if not chunk:
                 break
 
-            txt += chunk
+            data += chunk
 
         mountpoints = []
 
-        for line in txt.decode(
+        for line in data.decode(
             errors="ignore"
         ).splitlines():
 
@@ -99,8 +98,11 @@ def mps():
             success=False,
 
             error=(
-                "Connection timed out. "
-                "Check hostname, port or firewall."
+                "Connection timed out.\n\n"
+                "Possible causes:\n"
+                "- Wrong port\n"
+                "- Firewall blocking traffic\n"
+                "- Caster offline"
             )
 
         )
@@ -112,8 +114,8 @@ def mps():
             success=False,
 
             error=(
-                "Connection refused. "
-                "No NTRIP service is listening on this port."
+                f"Port {d['port']} is closed.\n\n"
+                "No NTRIP service is listening."
             )
 
         )
@@ -125,8 +127,8 @@ def mps():
             success=False,
 
             error=(
-                "Invalid hostname "
-                "or DNS lookup failed."
+                "Invalid hostname.\n\n"
+                "DNS lookup failed."
             )
 
         )
@@ -153,7 +155,8 @@ def test_connection():
 
     s = socket.socket()
 
-    s.settimeout(5)
+    # Faster timeout
+    s.settimeout(3)
 
     try:
 
@@ -207,8 +210,7 @@ def test_connection():
                 bytes_received += len(packet)
 
                 #
-                # RTCM 3.x packets start
-                # with preamble 0xD3
+                # RTCM 3.x preamble
                 #
                 if b"\xD3" in packet:
 
@@ -249,8 +251,13 @@ def test_connection():
             status="OFFLINE",
 
             error=(
-                f"Port {d['port']} did not respond. "
-                "Possible wrong port, firewall or caster offline."
+                f"Connection timed out on port "
+                f"{d['port']}.\n\n"
+                "Possible causes:\n"
+                "- Wrong port number\n"
+                "- Firewall blocking traffic\n"
+                "- Caster offline\n"
+                "- Network connectivity issue"
             )
 
         )
@@ -264,8 +271,9 @@ def test_connection():
             status="OFFLINE",
 
             error=(
-                f"Port {d['port']} is closed. "
-                "No service is accepting connections."
+                f"Port {d['port']} is closed.\n\n"
+                "No NTRIP service is accepting "
+                "connections on this port."
             )
 
         )
@@ -279,7 +287,8 @@ def test_connection():
             status="OFFLINE",
 
             error=(
-                "Invalid hostname or DNS lookup failed."
+                "Invalid hostname.\n\n"
+                "DNS lookup failed."
             )
 
         )
