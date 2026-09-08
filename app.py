@@ -4,8 +4,6 @@ import base64
 
 from flask import Flask, render_template, request, jsonify
 
-
-
 app = Flask(__name__)
 
 
@@ -45,14 +43,12 @@ def mountpoints():
         s.connect((host, port))
 
         s.sendall(
-
             auth(
                 host,
                 port,
                 d["username"],
                 d["password"]
             ).encode()
-
         )
 
         data = b""
@@ -66,9 +62,7 @@ def mountpoints():
 
             data += chunk
 
-        text = data.decode(
-            errors="ignore"
-        )
+        text = data.decode(errors="ignore")
 
         mountpoints = []
 
@@ -153,7 +147,6 @@ def test_connection():
     d = request.json
 
     s = socket.socket()
-
     s.settimeout(3)
 
     try:
@@ -173,15 +166,159 @@ def test_connection():
         )
 
         s.sendall(
-
             auth(
                 host,
                 port,
                 username,
                 password,
                 f"/{mountpoint}"
- 
-).encode()
+            ).encode()
+        )
 
-)
-               
+        finish_time = time.time() + 5
+
+        bytes_received = 0
+        rtcm_detected = False
+        response_text = ""
+
+        while time.time() < finish_time:
+
+            try:
+
+                packet = s.recv(4096)
+
+                if not packet:
+                    break
+
+                bytes_received += len(packet)
+
+                response_text += packet.decode(
+                    errors="ignore"
+                )
+
+                #
+                # Credenciais inválidas
+                #
+
+                if (
+                    "401 Unauthorized" in response_text
+                    or "401" in response_text
+                    or "Unauthorized" in response_text
+                    or "WWW-Authenticate" in response_text
+                ):
+
+                    return jsonify(
+
+                        success=False,
+
+                        status="OFFLINE",
+
+                        error="Wrong username or password."
+
+                    )
+
+                #
+                # RTCM 3.x
+                #
+
+                if b"\xD3" in packet:
+
+                    rtcm_detected = True
+
+            except:
+
+                break
+
+        if rtcm_detected:
+
+            status = "ONLINE"
+
+        else:
+
+            status = "NO RTCM DATA"
+
+        return jsonify(
+
+            success=True,
+
+            status=status,
+
+            latency_ms=latency_ms,
+
+            bytes_received=bytes_received,
+
+            rtcm_detected=rtcm_detected
+
+        )
+
+    except socket.timeout:
+
+        return jsonify(
+
+            success=False,
+
+            status="OFFLINE",
+
+            error=(
+                f"Connection timed out on port "
+                f"{d['port']}.\n\n"
+                "Possible causes:\n"
+                "- Wrong port number\n"
+                "- Firewall blocking traffic\n"
+                "- Caster offline\n"
+                "- Network connectivity issue"
+            )
+
+        )
+
+    except ConnectionRefusedError:
+
+        return jsonify(
+
+            success=False,
+
+            status="OFFLINE",
+
+            error=(
+                f"Port {d['port']} is closed.\n\n"
+                "No NTRIP service is accepting connections."
+            )
+
+        )
+
+    except socket.gaierror:
+
+        return jsonify(
+
+            success=False,
+
+            status="OFFLINE",
+
+            error="Invalid hostname."
+
+        )
+
+    except Exception as e:
+
+        return jsonify(
+
+            success=False,
+
+            status="OFFLINE",
+
+            error=f"Unexpected error: {str(e)}"
+
+        )
+
+    finally:
+
+        s.close()
+
+
+if __name__ == "__main__":
+
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=False
+    )
