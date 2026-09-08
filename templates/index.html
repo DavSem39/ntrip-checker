@@ -221,18 +221,67 @@ async function testc(){
 
     if(d.success){
 
-        let cssClass =
-            "status-online";
+    let cssClass = "status-online";
+    let icon = "🟢";
 
-        if(d.status === "NO RTCM DATA"){
+    if(d.status === "NO RTCM DATA"){
 
-            cssClass =
-                "status-warning";
+        cssClass = "status-warning";
+        icon = "🟡";
 
-        }
+    }
 
-        result.innerHTML = `
+    result.innerHTML = `
 
+    <div class="status-box ${cssClass}">
+
+        <div class="status-title">
+            ${icon} ${d.status}
+        </div>
+
+        <div>
+            <strong>Latency:</strong>
+            ${d.latency_ms} ms
+        </div>
+
+        <div>
+            <strong>Bytes Received:</strong>
+            ${d.bytes_received}
+        </div>
+
+        <div>
+            <strong>RTCM:</strong>
+            ${d.rtcm_detected ? "YES" : "NO"}
+        </div>
+
+    </div>
+
+    `;
+
+}
+else{
+
+    result.innerHTML = `
+
+    <div class="status-box status-offline">
+
+        <div class="status-title">
+            🔴 OFFLINE
+        </div>
+
+        <div>
+
+            ${d.error}
+
+        </div>
+
+    </div>
+
+    `;
+
+}
+result.innerHTML = `
+    
         <div class="p-3 rounded ${cssClass}">
 
             <h5>${d.status}</h5>
