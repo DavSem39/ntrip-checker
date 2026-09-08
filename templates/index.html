@@ -6,247 +6,135 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>DRAVO S.A. - NTRIP Checker</title>
+<title>DRAVO NTRIP Checker</title>
 
-<link href="https://cdn.jsdelivr.net/npm.3.3/dist/css/bootstrap.min.css
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/distap.min.css
 
 <style>
 
+:root{
+
+    --primary:#7f56d9;
+    --secondary:#0d6efd;
+    --success:#22c55e;
+    --warning:#f59e0b;
+    --danger:#ef4444;
+
+}
+
+*{
+    box-sizing:border-box;
+}
+
 body{
-    background:#F4F6F8;
-    font-family:'Segoe UI',sans-serif;
-}
 
-.header{
-    background:#002B45;
-    color:white;
-    padding:25px;
-    border-radius:15px;
-    margin-bottom:25px;
-    text-align:center;
-}
-
-.header h1{
     margin:0;
-    font-weight:700;
+    background:#dbe7f4;
+    font-family:Segoe UI,sans-serif;
+
 }
 
-.header p{
-    margin-top:10px;
-    color:#d6dce2;
+.hero{
+
+    height:220px;
+
+    background:linear-gradient(
+        rgba(25,35,55,.35),
+        rgba(25,35,55,.35)
+    ),
+    url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?q=80&w=1800');
+
+    background-size:cover;
+    background-position:center;
+
+    position:relative;
+
+}
+
+.logo-box{
+
+    position:absolute;
+
+    bottom:-40px;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    width:90px;
+    height:90px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:20px;
+
+    background:white;
+
+    font-size:42px;
+
+    box-shadow:
+    0 10px 30px rgba(0,0,0,.15);
+
+}
+
+.hero-title{
+
+    position:absolute;
+
+    left:50%;
+    top:45%;
+
+    transform:translate(-50%,-50%);
+
+    color:white;
+
+    text-align:center;
+
+}
+
+.hero-title h1{
+
+    margin:0;
+
+    font-size:40px;
+
+    font-weight:700;
+
+}
+
+.hero-title p{
+
+    margin:5px 0 0 0;
+
+    font-size:18px;
+
+}
+
+.content{
+
+    padding:60px 18px 20px;
+
 }
 
 .main-card{
 
     background:white;
-    padding:25px;
 
-    border-radius:15px;
+    border-radius:28px;
 
-    box-shadow:
-    0 5px 20px rgba(0,0,0,0.08);
+    padding:22px;
 
-}
+    max-width:700px;
 
-.form-control,
-.form-select{
-
-    height:50px;
-
-}
-
-.btn-primary{
-
-    background:#002B45;
-    border:none;
-
-    height:50px;
-
-}
-
-.btn-primary:hover{
-
-    background:#003B60;
-
-}
-
-.btn-success{
-
-    background:#F47C20;
-    border:none;
-
-    height:50px;
-
-}
-
-.btn-success:hover{
-
-    background:#df6f19;
-
-}
-
-.status-card{
-
-    background:white;
-
-    border-radius:15px;
-
-    padding:20px;
-
-    margin-top:20px;
+    margin:auto;
 
     box-shadow:
-    0 5px 20px rgba(0,0,0,0.08);
+    0 8px 25px rgba(0,0,0,.08);
 
 }
 
-.status-header{
+.section-title{
 
-    display:flex;
-
-    align-items:center;
-
-    gap:12px;
-
-    font-size:22px;
-
-    font-weight:600;
-
-}
-
-.status-dot{
-
-    width:18px;
-
-    height:18px;
-
-    border-radius:50%;
-
-    display:inline-block;
-
-}
-
-.online{
-
-    background:#28a745;
-
-    box-shadow:
-    0 0 10px #28a745;
-
-}
-
-.warning{
-
-    background:#F47C20;
-
-    box-shadow:
-    0 0 10px #F47C20;
-
-}
-
-.offline{
-
-    background:#dc3545;
-
-    box-shadow:
-    0 0 10px #dc3545;
-
-}
-
-.status-info{
-
-    margin-top:15px;
-
-    font-size:16px;
-
-}
-
-.status-info div{
-
-    margin-top:8px;
-
-}
-
-.footer{
-
-    text-align:center;
-
-    margin-top:30px;
-
-    color:#6c757d;
-
-    font-size:14px;
-
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="container py-4">
-
-    <div class="header">
-
-        <h1>⚓ DRAVO S.A.</h1>
-
-        <p>NTRIP Connectivity Checker</p>
-
-    </div>
-
-    <div class="main-card">
-
-        <div class="mb-3">
-
-            <label class="form-label">
-                Caster Address
-            </label>
-
-            <input
-                id="host"
-                class="form-control"
-                placeholder="ntrip.provider.com">
-
-        </div>
-
-        <div class="mb-3">
-
-            <label class="form-label">
-                Port
-            </label>
-
-            <input
-                id="port"
-                class="form-control"
-                value="2101">
-
-        </div>
-
-        <div class="mb-3">
-
-            <label class="form-label">
-                Username
-            </label>
-
-            <input
-                id="username"
-                class="form-control">
-
-        </div>
-
-        <div class="mb-3">
-
-            <label class="form-label">
-                Password
-            </label>
-
-            <input
-                id="password"
-                type="password"
-                class="form-control">
-
-        </div>
-
-        <button
-            class="btn btn
+    font
