@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -49,7 +49,7 @@ body{
 }
 
 .status-title{
-    font-size:24px;
+    font-size:22px;
     font-weight:bold;
     margin-bottom:10px;
 }
@@ -62,88 +62,87 @@ body{
 
 <div class="container py-4">
 
-    <div class="card-box">
+<div class="card-box">
 
-        <h2 class="mb-3">
-            NTRIP Checker
-        </h2>
+<h2 class="mb-3">
+NTRIP Checker
+</h2>
 
-        <input
-            id="host"
-            class="form-control mb-2"
-            placeholder="Caster">
+<input
+id="host"
+class="form-control mb-2"
+placeholder="Caster">
 
-        <input
-            id="port"
-            class="form-control mb-2"
-            type="number"
-            placeholder="Port"
-            value=""
-            autocomplete="off">
+<input
+id="port"
+type="number"
+class="form-control mb-2"
+placeholder="Port"
+autocomplete="off">
 
-        <input
-            id="username"
-            class="form-control mb-2"
-            placeholder="Username">
+<input
+id="username"
+class="form-control mb-2"
+placeholder="Username">
 
-        <input
-            id="password"
-            type="password"
-            class="form-control mb-3"
-            placeholder="Password">
+<input
+id="password"
+type="password"
+class="form-control mb-3"
+placeholder="Password">
 
-        <button
-            class="btn btn-primary w-100 mb-3"
-            onclick="getm()">
+<button
+class="btn btn-primary w-100 mb-3"
+onclick="getm()">
 
-            Get Mountpoints
+Get Mountpoints
 
-        </button>
+</button>
 
-        <select
-            id="mp"
-            class="form-select mb-3">
+<select
+id="mp"
+class="form-select mb-3">
 
-        </select>
+</select>
 
-        <button
-            class="btn btn-success w-100 mb-2"
-            onclick="testc()">
+<button
+class="btn btn-success w-100 mb-2"
+onclick="testc()">
 
-            Test Connection
+Test Connection
 
-        </button>
+</button>
 
-        <button
-            class="btn btn-secondary w-100 mb-3"
-            onclick="saveConnection()">
+<button
+class="btn btn-secondary w-100 mb-3"
+onclick="saveConnection()">
 
-            Save Connection
+Save Connection
 
-        </button>
+</button>
 
-        <label class="form-label">
-            Saved Connections
-        </label>
+<label class="form-label">
+Saved Connections
+</label>
 
-        <select
-            id="savedConnections"
-            class="form-select mb-3"
-            onchange="loadConnection()">
+<select
+id="savedConnections"
+class="form-select mb-3"
+onchange="loadConnection()">
 
-        </select>
+</select>
 
-        <button
-            class="btn btn-danger w-100 mb-3"
-            onclick="deleteConnection()">
+<button
+class="btn btn-danger w-100 mb-3"
+onclick="deleteConnection()">
 
-            Delete Saved Connection
+Delete Saved Connection
 
-        </button>
+</button>
 
-        <div id="res"></div>
+<div id="res"></div>
 
-    </div>
+</div>
 
 </div>
 
@@ -151,7 +150,7 @@ body{
 
 function payload(){
 
-    return {
+    return{
 
         host:
             document.getElementById("host").value,
@@ -171,37 +170,50 @@ function payload(){
 
 async function getm(){
 
-    let r = await fetch('/mountpoints',{
+    let response = await fetch(
+        "/mountpoints",
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":
+                "application/json"
+            },
+            body:JSON.stringify(
+                payload()
+            )
+        }
+    );
 
-        method:'POST',
-
-        headers:{
-            'Content-Type':'application/json'
-        },
-
-        body:JSON.stringify(payload())
-
-    });
-
-    let d = await r.json();
+    let data =
+        await response.json();
 
     let select =
         document.getElementById("mp");
 
-    select.innerHTML = '';
+    select.innerHTML = "";
 
-    if(d.success){
+    if(data.success){
 
-        d.mountpoints.forEach(v=>{
+        data.mountpoints.forEach(
+            function(mp){
 
-            select.innerHTML +=
-            `<option>${v}</option>`;
+                let option =
+                    document.createElement(
+                        "option"
+                    );
 
-        });
+                option.text = mp;
+                option.value = mp;
 
-    }else{
+                select.add(option);
 
-        alert(d.error);
+            }
+        );
+
+    }
+    else{
+
+        alert(data.error);
 
     }
 
@@ -212,26 +224,32 @@ async function testc(){
     let p = payload();
 
     p.mountpoint =
-        document.getElementById("mp").value;
+        document.getElementById(
+            "mp"
+        ).value;
 
-    let r = await fetch('/test_connection',{
+    let response =
+        await fetch(
+            "/test_connection",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":
+                    "application/json"
+                },
+                body:JSON.stringify(p)
+            }
+        );
 
-        method:'POST',
-
-        headers:{
-            'Content-Type':'application/json'
-        },
-
-        body:JSON.stringify(p)
-
-    });
-
-    let d = await r.json();
+    let data =
+        await response.json();
 
     let result =
-        document.getElementById("res");
+        document.getElementById(
+            "res"
+        );
 
-    if(d.success){
+    if(data.success){
 
         let cssClass =
             "status-online";
@@ -239,13 +257,16 @@ async function testc(){
         let icon =
             "🟢";
 
-        if(d.status === "NO RTCM DATA"){
+        if(
+            data.status ===
+            "NO RTCM DATA"
+        ){
 
             cssClass =
-                "status-warning";
+            "status-warning";
 
             icon =
-                "🟡";
+            "🟡";
 
         }
 
@@ -254,40 +275,48 @@ async function testc(){
         <div class="status-box ${cssClass}">
 
             <div class="status-title">
-                ${icon} ${d.status}
+
+                ${icon}
+                ${data.status}
+
             </div>
 
             <div>
                 <strong>Latency:</strong>
-                ${d.latency_ms} ms
+                ${data.latency_ms} ms
             </div>
 
             <div>
-                <strong>Bytes Received:</strong>
-                ${d.bytes_received}
+                <strong>Bytes:</strong>
+                ${data.bytes_received}
             </div>
 
             <div>
                 <strong>RTCM:</strong>
-                ${d.rtcm_detected ? "YES" : "NO"}
+                ${data.rtcm_detected ? "YES" : "NO"}
             </div>
 
         </div>
 
         `;
 
-    }else{
+    }
+    else{
 
         result.innerHTML = `
 
         <div class="status-box status-offline">
 
             <div class="status-title">
+
                 🔴 OFFLINE
+
             </div>
 
             <div>
-                ${d.error}
+
+                ${data.error}
+
             </div>
 
         </div>
@@ -297,8 +326,6 @@ async function testc(){
     }
 
 }
-
-/* SAVED CONNECTIONS */
 
 function saveConnection(){
 
@@ -312,13 +339,102 @@ function saveConnection(){
     profiles.push({
 
         host:
-            document.getElementById("host").value,
+        document.getElementById(
+            "host"
+        ).value,
 
         port:
-            document.getElementById("port").value,
+        document.getElementById(
+            "port"
+        ).value,
 
         username:
-            document.getElementById("username").value,
+        document.getElementById(
+            "username"
+        ).value,
 
         password:
-      
+        document.getElementById(
+            "password"
+        ).value
+
+    });
+
+    localStorage.setItem(
+        "ntripProfiles",
+        JSON.stringify(profiles)
+    );
+
+    populateProfiles();
+
+}
+
+function populateProfiles(){
+
+    let profiles =
+        JSON.parse(
+            localStorage.getItem(
+                "ntripProfiles"
+            ) || "[]"
+        );
+
+    let dropdown =
+        document.getElementById(
+            "savedConnections"
+        );
+
+    dropdown.innerHTML =
+    '<option value="">Select saved connection</option>';
+
+    profiles.forEach(
+        function(profile,index){
+
+            dropdown.innerHTML +=
+            `<option value="${index}">
+                ${profile.host}
+            </option>`;
+
+        }
+    );
+
+}
+
+function loadConnection(){
+
+    let profiles =
+        JSON.parse(
+            localStorage.getItem(
+                "ntripProfiles"
+            ) || "[]"
+        );
+
+    let idx =
+        document.getElementById(
+            "savedConnections"
+        ).value;
+
+    if(idx === "")
+        return;
+
+    let profile =
+        profiles[idx];
+
+    if(!profile)
+        return;
+
+    document.getElementById(
+        "host"
+    ).value =
+        profile.host;
+
+    document.getElementById(
+        "port"
+    ).value =
+        profile.port;
+
+    document.getElementById(
+        "username"
+    ).value =
+        profile.username;
+
+    document.
