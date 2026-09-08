@@ -176,4 +176,12 @@ def test_connection():
 
             auth(
                 host,
+                port,
+                username,
+                password,
+                f"/{mountpoint}"
+ 
+).encode()
+
+)
                
